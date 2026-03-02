@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct MomentsApp: App {
+    @State private var settingsStore = SettingsStore()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ComposeView(store: settingsStore)
+                .environment(settingsStore)
         }
     }
 }

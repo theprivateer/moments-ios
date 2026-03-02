@@ -1,0 +1,130 @@
+openapi: 3.1.0
+
+info:
+  title: Moments API
+  version: '1'
+
+servers:
+  - url: '{serverUrl}'
+    variables:
+      serverUrl:
+        default: https://moments.test
+        description: Base URL of the Moments instance
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: moments
+    description: Moment creation
+
+paths:
+  /api/v1/moments:
+    post:
+      summary: Create a moment
+      tags: [moments]
+      requestBody:
+        required: true
+        description: |
+          At least one of `body` or `images` must be supplied.
+          When no images are provided, `body` is required.
+          When no body is provided, at least one image is required.
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+                  maxLength: 10000
+                  description: Markdown text. Required when no images are supplied.
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Image files (JPEG, PNG, GIF, etc.). Required when no body is supplied.
+      responses:
+        '201':
+          description: Moment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MomentResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+  schemas:
+    MomentResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Moment'
+
+    Moment:
+      type: object
+      required: [id, body, body_html, created_at, images]
+      properties:
+        id:
+          type: integer
+        body:
+          type: string
+          nullable: true
+          description: Raw Markdown text
+        body_html:
+          type: string
+          nullable: true
+          description: CommonMark-rendered HTML (unsafe HTML stripped, unsafe links blocked)
+        created_at:
+          type: string
+          format: date-time
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/MomentImage'
+
+    MomentImage:
+      type: object
+      required: [id, url]
+      properties:
+        id:
+          type: integer
+        url:
+          type: string
+          format: uri
+          description: Direct storage URL for the image
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
