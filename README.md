@@ -2,7 +2,7 @@
 
 ## Overview
 
-Moments is a minimal iOS client for posting short updates ("moments") to a self-hosted server. Each post supports up to 10,000 characters of text and up to 10 attached images. Posts are submitted as multipart form data to a REST API you control.
+Moments is a minimal iOS client for posting short updates ("moments") to a self-hosted server. Each post supports up to 10,000 characters of text and up to 10 attached images. Images are uploaded individually the moment they are selected; the post is then submitted as JSON referencing the uploaded image IDs.
 
 This app is built as the iOS companion to [theprivateer/moments](https://github.com/theprivateer/moments), a self-hosted Laravel microblog.
 
@@ -12,14 +12,14 @@ This app is built as the iOS companion to [theprivateer/moments](https://github.
 ## Requirements
 
 - Xcode with the iOS 26.2+ SDK
-- A running instance of [theprivateer/moments](https://github.com/theprivateer/moments) (or a compatible server exposing `POST /api/v1/moments`)
+- A running instance of [theprivateer/moments](https://github.com/theprivateer/moments) (or a compatible server exposing `POST /api/v1/images` and `POST /api/v1/moments`)
 - A Personal Access Token (PAT) for that server
 
 ## Getting Started
 
 1. Clone the repo
 2. Open `Moments.xcodeproj` in Xcode
-3. Select a simulator running iOS 26.2+ (e.g. iPhone 16)
+3. Select a simulator running iOS 26.2+ (e.g. iPhone 17)
 4. Build and run (⌘R)
 5. Tap the gear icon on the Compose screen → enter your Server URL and PAT → tap Save
 
@@ -28,7 +28,7 @@ This app is built as the iOS companion to [theprivateer/moments](https://github.
 ```bash
 xcodebuild -project Moments.xcodeproj -scheme Moments \
   -sdk iphonesimulator \
-  -destination 'platform=iOS Simulator,name=iPhone 16' build
+  -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
 ## Configuration
@@ -43,18 +43,29 @@ Enter both values via the gear icon on the Compose screen.
 ## API Contract
 
 ```
-POST {serverURL}/api/v1/moments
+POST {serverURL}/api/v1/images
 Authorization: Bearer {token}
 Content-Type: multipart/form-data
 
-body      — text content (up to 10,000 characters)
-images[]  — JPEG image(s), up to 10
-```
+image  — JPEG image file
 
-**Responses:**
-- `201 Created` — `{ "data": { ...Moment } }`
-- `401 Unauthorized` — invalid or missing token
-- `422 Unprocessable Entity` — validation error
+Response: 201 Created — { "data": { "id": 1, "url": "..." } }
+
+
+POST {serverURL}/api/v1/moments
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "body":   "text content (up to 10,000 characters)",
+  "images": [1, 2]   ← IDs returned by POST /api/v1/images
+}
+
+Responses:
+- 201 Created               — { "data": { ...Moment } }
+- 401 Unauthorized          — invalid or missing token
+- 422 Unprocessable Entity  — validation error
+```
 
 ## Project Structure
 
