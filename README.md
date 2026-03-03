@@ -4,10 +4,12 @@
 
 Moments is a minimal iOS client for posting short updates ("moments") to a self-hosted server. Each post supports up to 10,000 characters of text and up to 10 attached images. Posts are submitted as multipart form data to a REST API you control.
 
+This app is built as the iOS companion to [theprivateer/moments](https://github.com/theprivateer/moments), a self-hosted Laravel microblog.
+
 ## Requirements
 
 - Xcode with the iOS 26.2+ SDK
-- A self-hosted server exposing `POST /api/v1/moments`
+- A running instance of [theprivateer/moments](https://github.com/theprivateer/moments) (or a compatible server exposing `POST /api/v1/moments`)
 - A Personal Access Token (PAT) for that server
 
 ## Getting Started
