@@ -6,6 +6,9 @@ Moments is a minimal iOS client for posting short updates ("moments") to a self-
 
 This app is built as the iOS companion to [theprivateer/moments](https://github.com/theprivateer/moments), a self-hosted Laravel microblog.
 
+> [!NOTE]
+> I am intentionally using **Claude Code** to help build and maintain this project as an exploration of using AI coding assistants.
+
 ## Requirements
 
 - Xcode with the iOS 26.2+ SDK
