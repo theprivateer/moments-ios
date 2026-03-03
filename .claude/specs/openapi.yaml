@@ -15,10 +15,48 @@ security:
   - bearerAuth: []
 
 tags:
+  - name: images
+    description: Image upload
   - name: moments
     description: Moment creation
 
 paths:
+  /api/v1/images:
+    post:
+      summary: Upload an image
+      tags: [images]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file to upload (JPEG, PNG, GIF, etc.)
+      responses:
+        '201':
+          description: Image uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MomentImageResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
   /api/v1/moments:
     post:
       summary: Create a moment
@@ -28,9 +66,10 @@ paths:
         description: |
           At least one of `body` or `images` must be supplied.
           When no images are provided, `body` is required.
-          When no body is provided, at least one image is required.
+          When no body is provided, at least one image ID is required.
+          Image IDs are obtained by first uploading via `POST /api/v1/images`.
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
               properties:
@@ -41,9 +80,8 @@ paths:
                 images:
                   type: array
                   items:
-                    type: string
-                    format: binary
-                  description: Image files (JPEG, PNG, GIF, etc.). Required when no body is supplied.
+                    type: integer
+                  description: IDs of pre-uploaded images (from POST /api/v1/images). Required when no body is supplied.
       responses:
         '201':
           description: Moment created
@@ -72,6 +110,12 @@ components:
       bearerFormat: Sanctum
 
   schemas:
+    MomentImageResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MomentImage'
+
     MomentResponse:
       type: object
       properties:
@@ -109,7 +153,7 @@ components:
         url:
           type: string
           format: uri
-          description: Direct storage URL for the image
+          description: Signed Glide URL for the image
 
     ErrorResponse:
       type: object

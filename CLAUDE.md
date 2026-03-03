@@ -27,3 +27,7 @@ xcodebuild test -project Moments.xcodeproj -scheme Moments -sdk iphonesimulator 
 ## Architecture
 
 This is a new project — only the default Xcode template exists so far (`MomentsApp.swift` entry point, `ContentView.swift`). As the app grows, follow MVVM with `@Observable` view models (iOS 17+), feature-based folder structure, and SwiftData for persistence if needed. See `.claude/rules/swift.md` and `.claude/rules/swift-swiftui.md` for coding conventions.
+
+## Server API
+
+The Moments server API is documented as an OpenAPI 3.1 spec at `.claude/specs/openapi.yaml`. Consult this spec when working on network requests, API integration, or adding new endpoints.
