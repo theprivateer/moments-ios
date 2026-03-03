@@ -13,7 +13,7 @@ struct MomentsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ComposeView(store: settingsStore)
+            TimelineView(store: settingsStore)
                 .environment(settingsStore)
         }
     }

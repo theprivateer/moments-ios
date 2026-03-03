@@ -2,6 +2,10 @@ import Foundation
 import UIKit
 import Observation
 
+extension Notification.Name {
+    static let momentPosted = Notification.Name("com.philstephens.Moments.momentPosted")
+}
+
 @Observable final class AttachedImageUpload: Identifiable {
     enum UploadState { case uploading, uploaded(Int), failed }
     let id = UUID()
@@ -77,6 +81,7 @@ import Observation
             bodyText = ""
             imageUploads = []
             didSubmitSuccessfully = true
+            NotificationCenter.default.post(name: .momentPosted, object: nil)
         } catch let error as AppError {
             submissionError = error
         } catch {

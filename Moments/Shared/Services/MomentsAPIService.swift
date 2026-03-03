@@ -68,6 +68,46 @@ struct MomentsAPIService {
         }
     }
 
+    func fetchTimeline(page: Int = 1, serverURL: String, token: String) async throws -> MomentListResponse {
+        var components = URLComponents(string: "\(serverURL)/api/v1/moments")
+        components?.queryItems = [URLQueryItem(name: "page", value: String(page))]
+        guard let url = components?.url else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid server URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            throw AppError.networkError(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 200:
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            do {
+                return try decoder.decode(MomentListResponse.self, from: data)
+            } catch {
+                throw AppError.decodingError(error)
+            }
+        case 401:
+            throw AppError.unauthorized
+        default:
+            let message = String(data: data, encoding: .utf8)
+            throw AppError.serverError(statusCode: httpResponse.statusCode, message: message)
+        }
+    }
+
     func postMoment(body: String?, imageIDs: [Int], serverURL: String, token: String) async throws -> Moment {
         guard let url = URL(string: "\(serverURL)/api/v1/moments") else {
             throw AppError.serverError(statusCode: 0, message: "Invalid server URL")

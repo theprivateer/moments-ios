@@ -43,6 +43,12 @@ Enter both values via the gear icon on the Compose screen.
 ## API Contract
 
 ```
+GET {serverURL}/api/v1/moments?page={n}
+Authorization: Bearer {token}
+
+Response: 200 OK — { "data": [...Moment], "links": {...}, "meta": { "currentPage": n, ... } }
+
+
 POST {serverURL}/api/v1/images
 Authorization: Bearer {token}
 Content-Type: multipart/form-data
@@ -74,6 +80,7 @@ Moments/
 ├── MomentsApp.swift
 ├── Features/
 │   ├── Compose/          (ComposeView, ComposeViewModel, AttachedImagesStrip)
+│   ├── Timeline/         (TimelineView, TimelineViewModel, MomentRowView)
 │   └── Settings/         (SettingsView, SettingsViewModel)
 └── Shared/
     ├── Models/           (Moment, AppError)
