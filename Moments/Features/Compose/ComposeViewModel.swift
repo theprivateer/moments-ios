@@ -2,9 +2,20 @@ import Foundation
 import UIKit
 import Observation
 
+@Observable final class AttachedImageUpload: Identifiable {
+    enum UploadState { case uploading, uploaded(Int), failed }
+    let id = UUID()
+    let image: UIImage
+    var state: UploadState = .uploading
+
+    init(image: UIImage) {
+        self.image = image
+    }
+}
+
 @Observable @MainActor final class ComposeViewModel {
     var bodyText: String = ""
-    var attachedImages: [UIImage] = []
+    var imageUploads: [AttachedImageUpload] = []
     var isSubmitting: Bool = false
     var submissionError: AppError?
     var didSubmitSuccessfully: Bool = false
@@ -19,8 +30,16 @@ import Observation
         remainingCharacters < 0
     }
 
+    var allImagesSettled: Bool {
+        imageUploads.allSatisfy { if case .uploading = $0.state { return false }; return true }
+    }
+
+    var hasFailedUploads: Bool {
+        imageUploads.contains { if case .failed = $0.state { return true }; return false }
+    }
+
     var hasContent: Bool {
-        !bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !attachedImages.isEmpty
+        !bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !imageUploads.isEmpty
     }
 
     let store: SettingsStore
@@ -32,6 +51,7 @@ import Observation
 
     var canSubmit: Bool {
         store.isConfigured && hasContent && !isOverLimit && !isSubmitting
+            && allImagesSettled && !hasFailedUploads
     }
 
     func submit() async {
@@ -42,16 +62,20 @@ import Observation
 
         let trimmedBody = bodyText.trimmingCharacters(in: .whitespacesAndNewlines)
         let bodyToSend: String? = trimmedBody.isEmpty ? nil : trimmedBody
+        let imageIDs = imageUploads.compactMap { upload -> Int? in
+            if case .uploaded(let id) = upload.state { return id }
+            return nil
+        }
 
         do {
             _ = try await api.postMoment(
                 body: bodyToSend,
-                images: attachedImages,
+                imageIDs: imageIDs,
                 serverURL: store.serverURL,
                 token: store.personalAccessToken
             )
             bodyText = ""
-            attachedImages = []
+            imageUploads = []
             didSubmitSuccessfully = true
         } catch let error as AppError {
             submissionError = error
@@ -62,12 +86,22 @@ import Observation
         isSubmitting = false
     }
 
-    func removeImage(at index: Int) {
-        guard attachedImages.indices.contains(index) else { return }
-        attachedImages.remove(at: index)
+    func appendImage(_ image: UIImage) {
+        let upload = AttachedImageUpload(image: image)
+        imageUploads.append(upload)
+        Task { await performUpload(upload) }
     }
 
-    func appendImage(_ image: UIImage) {
-        attachedImages.append(image)
+    private func performUpload(_ upload: AttachedImageUpload) async {
+        do {
+            let momentImage = try await api.uploadImage(upload.image, serverURL: store.serverURL, token: store.personalAccessToken)
+            upload.state = .uploaded(momentImage.id)
+        } catch {
+            upload.state = .failed
+        }
+    }
+
+    func removeImage(withID id: UUID) {
+        imageUploads.removeAll { $0.id == id }
     }
 }

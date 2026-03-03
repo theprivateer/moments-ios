@@ -1,22 +1,24 @@
 import SwiftUI
 
 struct AttachedImagesStrip: View {
-    let images: [UIImage]
-    let onRemove: (Int) -> Void
+    let uploads: [AttachedImageUpload]
+    let onRemove: (UUID) -> Void
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(Array(images.enumerated()), id: \.offset) { index, image in
+                ForEach(uploads) { upload in
                     ZStack(alignment: .topTrailing) {
-                        Image(uiImage: image)
+                        Image(uiImage: upload.image)
                             .resizable()
                             .scaledToFill()
                             .frame(width: 80, height: 80)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
 
+                        stateOverlay(for: upload.state)
+
                         Button {
-                            onRemove(index)
+                            onRemove(upload.id)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .symbolRenderingMode(.palette)
@@ -29,6 +31,31 @@ struct AttachedImagesStrip: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
+        }
+    }
+
+    @ViewBuilder
+    private func stateOverlay(for state: AttachedImageUpload.UploadState) -> some View {
+        switch state {
+        case .uploading:
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.black.opacity(0.4))
+                .frame(width: 80, height: 80)
+                .overlay {
+                    ProgressView()
+                        .tint(.white)
+                }
+        case .failed:
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.black.opacity(0.4))
+                .frame(width: 80, height: 80)
+                .overlay {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.yellow)
+                        .font(.system(size: 24))
+                }
+        case .uploaded:
+            EmptyView()
         }
     }
 }

@@ -17,10 +17,10 @@ struct ComposeView: View {
                 VStack(spacing: 0) {
                     textEditorSection
 
-                    if !vm.attachedImages.isEmpty {
+                    if !vm.imageUploads.isEmpty {
                         Divider()
-                        AttachedImagesStrip(images: vm.attachedImages) { index in
-                            vm.removeImage(at: index)
+                        AttachedImagesStrip(uploads: vm.imageUploads) { id in
+                            vm.removeImage(withID: id)
                         }
                     }
                 }

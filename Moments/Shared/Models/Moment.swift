@@ -16,3 +16,7 @@ struct MomentImage: Decodable, Sendable {
     let id: Int
     let url: String
 }
+
+struct MomentImageResponse: Decodable, Sendable {
+    let data: MomentImage
+}
