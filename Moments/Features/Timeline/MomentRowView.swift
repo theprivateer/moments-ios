@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MomentRowView: View {
     let moment: Moment
-    @State private var attributedBody: AttributedString?
+    @State private var paragraphs: [AttributedString] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -10,9 +10,13 @@ struct MomentRowView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if let attributedBody {
-                Text(attributedBody)
-                    .foregroundStyle(.primary)
+            if !paragraphs.isEmpty {
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
+                        Text(para)
+                            .foregroundStyle(.primary)
+                    }
+                }
             } else if let plainBody = moment.body {
                 Text(plainBody)
                     .font(.body)
@@ -51,9 +55,9 @@ struct MomentRowView: View {
         .task(id: moment.id) {
             guard let html = moment.bodyHTML, !html.isEmpty else { return }
             let result = await Task.detached(priority: .userInitiated) {
-                Self.parseHTML(html)
+                Self.splitParagraphs(html).compactMap { Self.parseFragment($0) }
             }.value
-            attributedBody = result
+            paragraphs = result
         }
     }
 
@@ -74,12 +78,35 @@ struct MomentRowView: View {
         return plain.date(from: string) ?? Date()
     }
 
-    private static func parseHTML(_ html: String) -> AttributedString? {
+    private static func splitParagraphs(_ html: String) -> [String] {
+        // Two-level split:
+        //   1. Walk <pre> boundaries (keeps nested <p> inside <pre> intact).
+        //   2. For every prose chunk, further split on <p> boundaries.
+        var result: [String] = []
+        var remaining = html[...]
+        let prePattern = /<pre[^>]*>[\s\S]*?<\/pre>/
+        while let match = remaining.firstMatch(of: prePattern) {
+            let prose = String(remaining[..<match.range.lowerBound])
+            result.append(contentsOf: splitByParagraphs(prose))
+            result.append(String(match.output))
+            remaining = remaining[match.range.upperBound...]
+        }
+        result.append(contentsOf: splitByParagraphs(String(remaining)))
+        return result.isEmpty ? [html] : result
+    }
+
+    private static func splitByParagraphs(_ html: String) -> [String] {
+        let trimmed = html.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+        let matches = trimmed.matches(of: /<p[^>]*>[\s\S]*?<\/p>/)
+        let fragments = matches.map { String($0.output) }
+        return fragments.isEmpty ? [trimmed] : fragments
+    }
+
+    private static func parseFragment(_ html: String) -> AttributedString? {
         let styledHTML = """
         <style>
         body { font-family: -apple-system, sans-serif; font-size: 17px; }
-        p { margin: 0 0 14px 0; }
-        p:last-child { margin-bottom: 0; }
         </style>
         \(html)
         """
@@ -91,7 +118,14 @@ struct MomentRowView: View {
         guard let nsAttr = try? NSAttributedString(data: data, options: options, documentAttributes: nil) else {
             return nil
         }
-        guard var result: AttributedString = try? AttributedString(nsAttr, including: \.uiKit) else { return nil }
+        // Trim the trailing \n the HTML parser always appends. That \n carries
+        // NSParagraphStyle.paragraphSpacing for <p> blocks; removing it makes all
+        // fragment bottoms uniform so only the VStack spacing controls gaps.
+        let mutable = nsAttr.mutableCopy() as! NSMutableAttributedString
+        while mutable.length > 0 && mutable.string.hasSuffix("\n") {
+            mutable.deleteCharacters(in: NSRange(location: mutable.length - 1, length: 1))
+        }
+        guard var result = try? AttributedString(mutable, including: \.uiKit) else { return nil }
         for run in result.runs {
             result[run.range].uiKit.foregroundColor = nil
         }
