@@ -14,12 +14,13 @@ extension Notification.Name {
     var newImageUploads: [AttachedImageUpload] = []
     var isSubmitting: Bool = false
     var submissionError: AppError?
-    var didSaveSuccessfully: Bool = false
-    var didDeleteSuccessfully: Bool = false
+    var wasSaved: Bool = false
+    var wasDeleted: Bool = false
 
     private let moment: Moment
     let store: SettingsStore
     private let api = MomentsAPIService()
+    private var uploadTasks: [UUID: Task<Void, Never>] = [:]
 
     private static let maxCharacters = 10_000
 
@@ -79,7 +80,7 @@ extension Notification.Name {
                 serverURL: store.serverURL,
                 token: store.personalAccessToken
             )
-            didSaveSuccessfully = true
+            wasSaved = true
             NotificationCenter.default.post(name: .momentUpdated, object: updated)
         } catch let error as AppError {
             submissionError = error
@@ -100,7 +101,7 @@ extension Notification.Name {
                 serverURL: store.serverURL,
                 token: store.personalAccessToken
             )
-            didDeleteSuccessfully = true
+            wasDeleted = true
             NotificationCenter.default.post(name: .momentDeleted, object: moment.id)
         } catch let error as AppError {
             submissionError = error
@@ -114,7 +115,8 @@ extension Notification.Name {
     func appendImage(_ image: UIImage) {
         let upload = AttachedImageUpload(image: image)
         newImageUploads.append(upload)
-        Task { await performUpload(upload) }
+        let task = Task { await performUpload(upload) }
+        uploadTasks[upload.id] = task
     }
 
     private func performUpload(_ upload: AttachedImageUpload) async {
@@ -126,7 +128,7 @@ extension Notification.Name {
         }
     }
 
-    func removeExistingImage(id: Int) {
+    func toggleImageRemoval(id: Int) {
         if imagesToRemove.contains(id) {
             imagesToRemove.remove(id)
         } else {
@@ -135,6 +137,8 @@ extension Notification.Name {
     }
 
     func removeNewUpload(id: UUID) {
+        uploadTasks[id]?.cancel()
+        uploadTasks[id] = nil
         newImageUploads.removeAll { $0.id == id }
     }
 }

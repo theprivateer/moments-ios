@@ -14,8 +14,8 @@ struct MomentRowView: View {
 
             if !paragraphs.isEmpty {
                 VStack(alignment: .leading, spacing: 14) {
-                    ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, para in
-                        Text(para)
+                    ForEach(paragraphs.indices, id: \.self) { i in
+                        Text(paragraphs[i])
                             .foregroundStyle(.primary)
                     }
                 }
@@ -40,7 +40,7 @@ struct MomentRowView: View {
                             case .failure:
                                 Rectangle()
                                     .fill(Color.secondary.opacity(0.2))
-                                    .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                                    .overlay(Image(systemName: "photo").foregroundStyle(.secondary).accessibilityHidden(true))
                             default:
                                 Rectangle()
                                     .fill(Color.secondary.opacity(0.1))
@@ -73,21 +73,29 @@ struct MomentRowView: View {
         }
     }
 
+    private static let isoWithFractional: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    private static let isoPlain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private static let relativeFormatter: RelativeDateTimeFormatter = {
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .full
+        return f
+    }()
+
     private var relativeTimestamp: String {
-        let date = parseDate(moment.createdAt)
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter.localizedString(for: date, relativeTo: Date())
-    }
-
-    private func parseDate(_ string: String) -> Date {
-        let withFractional = ISO8601DateFormatter()
-        withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = withFractional.date(from: string) { return date }
-
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        return plain.date(from: string) ?? Date()
+        let date = Self.isoWithFractional.date(from: moment.createdAt)
+            ?? Self.isoPlain.date(from: moment.createdAt)
+            ?? Date()
+        return Self.relativeFormatter.localizedString(for: date, relativeTo: Date())
     }
 
     private static func splitParagraphs(_ html: String) -> [String] {
@@ -133,7 +141,7 @@ struct MomentRowView: View {
         // Trim the trailing \n the HTML parser always appends. That \n carries
         // NSParagraphStyle.paragraphSpacing for <p> blocks; removing it makes all
         // fragment bottoms uniform so only the VStack spacing controls gaps.
-        let mutable = nsAttr.mutableCopy() as! NSMutableAttributedString
+        guard let mutable = nsAttr.mutableCopy() as? NSMutableAttributedString else { return nil }
         while mutable.length > 0 && mutable.string.hasSuffix("\n") {
             mutable.deleteCharacters(in: NSRange(location: mutable.length - 1, length: 1))
         }

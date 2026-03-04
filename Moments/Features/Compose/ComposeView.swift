@@ -46,9 +46,9 @@ struct ComposeView: View {
             } message: {
                 Text(vm.submissionError?.localizedDescription ?? "")
             }
-            .onChange(of: vm.didSubmitSuccessfully) { _, success in
+            .onChange(of: vm.wasSubmitted) { _, success in
                 guard success else { return }
-                vm.didSubmitSuccessfully = false
+                vm.wasSubmitted = false
                 showSuccessBanner = true
                 Task {
                     try? await Task.sleep(for: .seconds(2))
@@ -65,6 +65,7 @@ struct ComposeView: View {
             TextEditor(text: $vm.bodyText)
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
+                .accessibilityLabel("What's on your mind?")
 
             if vm.bodyText.isEmpty {
                 Text("What's on your mind?")
@@ -72,6 +73,7 @@ struct ComposeView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -79,6 +81,7 @@ struct ComposeView: View {
                 .font(.caption)
                 .foregroundStyle(vm.isOverLimit ? .red : .secondary)
                 .padding(8)
+                .accessibilityLabel("\(vm.remainingCharacters) characters remaining")
         }
     }
 

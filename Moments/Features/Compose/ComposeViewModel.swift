@@ -6,7 +6,7 @@ extension Notification.Name {
     static let momentPosted = Notification.Name("com.philstephens.Moments.momentPosted")
 }
 
-@Observable final class AttachedImageUpload: Identifiable {
+@Observable @MainActor final class AttachedImageUpload: Identifiable {
     enum UploadState { case uploading, uploaded(Int), failed }
     let id = UUID()
     let image: UIImage
@@ -22,7 +22,7 @@ extension Notification.Name {
     var imageUploads: [AttachedImageUpload] = []
     var isSubmitting: Bool = false
     var submissionError: AppError?
-    var didSubmitSuccessfully: Bool = false
+    var wasSubmitted: Bool = false
 
     private static let maxCharacters = 10_000
 
@@ -48,6 +48,7 @@ extension Notification.Name {
 
     let store: SettingsStore
     private let api = MomentsAPIService()
+    private var uploadTasks: [UUID: Task<Void, Never>] = [:]
 
     init(store: SettingsStore) {
         self.store = store
@@ -80,7 +81,7 @@ extension Notification.Name {
             )
             bodyText = ""
             imageUploads = []
-            didSubmitSuccessfully = true
+            wasSubmitted = true
             NotificationCenter.default.post(name: .momentPosted, object: nil)
         } catch let error as AppError {
             submissionError = error
@@ -94,7 +95,8 @@ extension Notification.Name {
     func appendImage(_ image: UIImage) {
         let upload = AttachedImageUpload(image: image)
         imageUploads.append(upload)
-        Task { await performUpload(upload) }
+        let task = Task { await performUpload(upload) }
+        uploadTasks[upload.id] = task
     }
 
     private func performUpload(_ upload: AttachedImageUpload) async {
@@ -107,6 +109,8 @@ extension Notification.Name {
     }
 
     func removeImage(withID id: UUID) {
+        uploadTasks[id]?.cancel()
+        uploadTasks[id] = nil
         imageUploads.removeAll { $0.id == id }
     }
 }

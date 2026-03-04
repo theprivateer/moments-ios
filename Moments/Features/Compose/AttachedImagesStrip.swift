@@ -25,6 +25,7 @@ struct AttachedImagesStrip: View {
                                 .foregroundStyle(.white, .black.opacity(0.6))
                                 .font(.system(size: 18))
                         }
+                        .accessibilityLabel("Remove photo")
                         .offset(x: 6, y: -6)
                     }
                 }
@@ -53,6 +54,7 @@ struct AttachedImagesStrip: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.yellow)
                         .font(.system(size: 24))
+                        .accessibilityLabel("Upload failed")
                 }
         case .uploaded:
             EmptyView()

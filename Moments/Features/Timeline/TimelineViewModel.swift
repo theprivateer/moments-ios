@@ -19,7 +19,7 @@ import Observation
     }
 
     func loadInitialOrCached() async {
-        if let cached = loadFromCache(), moments.isEmpty {
+        if let cached = await loadFromCache(), moments.isEmpty {
             moments = cached
         }
         isLoading = moments.isEmpty
@@ -99,18 +99,23 @@ import Observation
     }
 
     private func saveToCache(_ moments: [Moment]) {
-        guard let url = cacheURL else { return }
-        let encoder = JSONEncoder()
-        if let data = try? encoder.encode(moments) {
-            try? data.write(to: url)
+        let url = cacheURL
+        Task.detached(priority: .utility) {
+            guard let url else { return }
+            let encoder = JSONEncoder()
+            if let data = try? encoder.encode(moments) {
+                try? data.write(to: url)
+            }
         }
     }
 
-    private func loadFromCache() -> [Moment]? {
-        guard let url = cacheURL,
-              let data = try? Data(contentsOf: url) else { return nil }
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try? decoder.decode([Moment].self, from: data)
+    private func loadFromCache() async -> [Moment]? {
+        let url = cacheURL
+        return await Task.detached(priority: .utility) {
+            guard let url, let data = try? Data(contentsOf: url) else { return nil }
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            return try? decoder.decode([Moment].self, from: data)
+        }.value
     }
 }

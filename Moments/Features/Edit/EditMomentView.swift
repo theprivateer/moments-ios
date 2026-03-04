@@ -41,10 +41,10 @@ struct EditMomentView: View {
             } message: {
                 Text(vm.submissionError?.localizedDescription ?? "")
             }
-            .onChange(of: vm.didSaveSuccessfully) { _, success in
+            .onChange(of: vm.wasSaved) { _, success in
                 if success { dismiss() }
             }
-            .onChange(of: vm.didDeleteSuccessfully) { _, deleted in
+            .onChange(of: vm.wasDeleted) { _, deleted in
                 if deleted { dismiss() }
             }
         }
@@ -55,6 +55,7 @@ struct EditMomentView: View {
             TextEditor(text: $vm.bodyText)
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
+                .accessibilityLabel("What's on your mind?")
 
             if vm.bodyText.isEmpty {
                 Text("What's on your mind?")
@@ -62,6 +63,7 @@ struct EditMomentView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -69,6 +71,7 @@ struct EditMomentView: View {
                 .font(.caption)
                 .foregroundStyle(vm.isOverLimit ? .red : .secondary)
                 .padding(8)
+                .accessibilityLabel("\(vm.remainingCharacters) characters remaining")
         }
     }
 
@@ -98,7 +101,7 @@ struct EditMomentView: View {
                 case .failure:
                     Rectangle()
                         .fill(Color.secondary.opacity(0.2))
-                        .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
+                        .overlay(Image(systemName: "photo").foregroundStyle(.secondary).accessibilityHidden(true))
                 default:
                     Rectangle()
                         .fill(Color.secondary.opacity(0.1))
@@ -116,13 +119,14 @@ struct EditMomentView: View {
             }
 
             Button {
-                vm.removeExistingImage(id: image.id)
+                vm.toggleImageRemoval(id: image.id)
             } label: {
                 Image(systemName: markedForRemoval ? "arrow.uturn.backward.circle.fill" : "xmark.circle.fill")
                     .symbolRenderingMode(.palette)
                     .foregroundStyle(.white, .black.opacity(0.6))
                     .font(.system(size: 18))
             }
+            .accessibilityLabel(markedForRemoval ? "Restore photo" : "Remove photo")
             .offset(x: 6, y: -6)
         }
     }
@@ -146,6 +150,7 @@ struct EditMomentView: View {
                     .foregroundStyle(.white, .black.opacity(0.6))
                     .font(.system(size: 18))
             }
+            .accessibilityLabel("Remove photo")
             .offset(x: 6, y: -6)
         }
     }
@@ -166,6 +171,7 @@ struct EditMomentView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.yellow)
                         .font(.system(size: 24))
+                        .accessibilityLabel("Upload failed")
                 }
         case .uploaded:
             EmptyView()
