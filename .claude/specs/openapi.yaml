@@ -127,6 +127,107 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationErrorResponse'
 
+  /api/v1/moments/{moment}:
+    patch:
+      summary: Update a moment
+      tags: [moments]
+      parameters:
+        - name: moment
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the moment to update
+      requestBody:
+        required: true
+        description: |
+          All fields are optional (PATCH semantics). At least one of `body` or images must
+          remain after the update — if removing all images, `body` must be supplied.
+          Use `add_images` for IDs obtained from `POST /api/v1/images`.
+          Use `remove_images` for IDs of images currently attached to this moment.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+                  maxLength: 10000
+                  nullable: true
+                  description: Markdown text. Required when no images would remain after the update.
+                add_images:
+                  type: array
+                  items:
+                    type: integer
+                  description: IDs of pre-uploaded images to attach (from POST /api/v1/images).
+                remove_images:
+                  type: array
+                  items:
+                    type: integer
+                  description: IDs of existing images to remove from this moment.
+      responses:
+        '200':
+          description: Moment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MomentResponse'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Moment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+    delete:
+      summary: Delete a moment
+      tags: [moments]
+      parameters:
+        - name: moment
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the moment to delete
+      responses:
+        '204':
+          description: Moment deleted
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Moment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   securitySchemes:
     bearerAuth:

@@ -70,6 +70,27 @@ import Observation
         isLoadingMore = false
     }
 
+    func updateMoment(_ moment: Moment) {
+        if let idx = moments.firstIndex(where: { $0.id == moment.id }) {
+            moments[idx] = moment
+        }
+    }
+
+    func removeMoment(withID id: Int) {
+        moments.removeAll { $0.id == id }
+    }
+
+    func deleteMoment(_ moment: Moment) async {
+        do {
+            try await api.deleteMoment(id: moment.id, serverURL: store.serverURL, token: store.personalAccessToken)
+            removeMoment(withID: moment.id)
+        } catch let e as AppError {
+            error = e
+        } catch {
+            self.error = .networkError(error as? URLError ?? URLError(.unknown))
+        }
+    }
+
     // MARK: - Cache
 
     private var cacheURL: URL? {

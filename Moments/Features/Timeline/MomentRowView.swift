@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MomentRowView: View {
     let moment: Moment
+    let onEdit: () -> Void
+    let onDelete: () -> Void
     @State private var paragraphs: [AttributedString] = []
 
     var body: some View {
@@ -51,6 +53,16 @@ struct MomentRowView: View {
                     }
                 }
             }
+
+            HStack {
+                Button("Edit", systemImage: "pencil") { onEdit() }
+                Spacer()
+                Button("Delete", systemImage: "trash") { onDelete() }
+                    .foregroundStyle(.red)
+            }
+            .font(.caption)
+            .buttonStyle(.plain)
+            .padding(.top, 4)
         }
         .task(id: moment.id) {
             guard let html = moment.bodyHTML, !html.isEmpty else { return }

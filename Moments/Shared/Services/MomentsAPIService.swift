@@ -108,6 +108,93 @@ struct MomentsAPIService {
         }
     }
 
+    func patchMoment(id: Int, body: String?, addImageIDs: [Int], removeImageIDs: [Int], serverURL: String, token: String) async throws -> Moment {
+        guard let url = URL(string: "\(serverURL)/api/v1/moments/\(id)") else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid server URL")
+        }
+
+        var payload: [String: Any] = [:]
+        if let body { payload["body"] = body }
+        if !addImageIDs.isEmpty { payload["add_images"] = addImageIDs }
+        if !removeImageIDs.isEmpty { payload["remove_images"] = removeImageIDs }
+        let jsonData = try JSONSerialization.data(withJSONObject: payload)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            throw AppError.networkError(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 200:
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            do {
+                let momentResponse = try decoder.decode(MomentResponse.self, from: data)
+                return momentResponse.data
+            } catch {
+                throw AppError.decodingError(error)
+            }
+        case 401:
+            throw AppError.unauthorized
+        case 422:
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            if let json = try? decoder.decode([String: [String: [String]]].self, from: data),
+               let errors = json["errors"] {
+                throw AppError.validationError(errors)
+            }
+            throw AppError.serverError(statusCode: 422, message: "Validation failed")
+        default:
+            let message = String(data: data, encoding: .utf8)
+            throw AppError.serverError(statusCode: httpResponse.statusCode, message: message)
+        }
+    }
+
+    func deleteMoment(id: Int, serverURL: String, token: String) async throws {
+        guard let url = URL(string: "\(serverURL)/api/v1/moments/\(id)") else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid server URL")
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            throw AppError.networkError(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw AppError.serverError(statusCode: 0, message: "Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 204:
+            return
+        case 401:
+            throw AppError.unauthorized
+        default:
+            let message = String(data: data, encoding: .utf8)
+            throw AppError.serverError(statusCode: httpResponse.statusCode, message: message)
+        }
+    }
+
     func postMoment(body: String?, imageIDs: [Int], serverURL: String, token: String) async throws -> Moment {
         guard let url = URL(string: "\(serverURL)/api/v1/moments") else {
             throw AppError.serverError(statusCode: 0, message: "Invalid server URL")
