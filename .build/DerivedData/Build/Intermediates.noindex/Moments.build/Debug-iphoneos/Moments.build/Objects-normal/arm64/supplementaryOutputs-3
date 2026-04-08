@@ -1,0 +1,23 @@
+{
+  "/Users/phil/Code/Moments/Moments/Features/Settings/SettingsViewModel.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsViewModel.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsViewModel.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsViewModel.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsViewModel.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsViewModel.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Timeline/MomentRowView.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/MomentRowView.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/MomentRowView.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/MomentRowView.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/MomentRowView.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/MomentRowView.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Timeline/TimelineImageViewer.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/TimelineImageViewer.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/TimelineImageViewer.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/TimelineImageViewer.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/TimelineImageViewer.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/TimelineImageViewer.swiftdeps"
+  }
+}

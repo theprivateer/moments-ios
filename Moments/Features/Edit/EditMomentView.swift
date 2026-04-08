@@ -16,7 +16,7 @@ struct EditMomentView: View {
             VStack(spacing: 0) {
                 textEditorSection
 
-                if !vm.existingImages.isEmpty || !vm.newImageUploads.isEmpty {
+                if !vm.orderedImages.isEmpty {
                     Divider()
                     imagesStrip
                 }
@@ -24,6 +24,9 @@ struct EditMomentView: View {
             .navigationTitle("Edit Moment")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
+            .safeAreaInset(edge: .bottom) {
+                deleteBar
+            }
             .confirmationDialog("Delete this moment?", isPresented: $showDeleteConfirmation, titleVisibility: .visible) {
                 Button("Delete", role: .destructive) {
                     Task { await vm.delete() }
@@ -47,6 +50,19 @@ struct EditMomentView: View {
             .onChange(of: vm.wasDeleted) { _, deleted in
                 if deleted { dismiss() }
             }
+        }
+    }
+
+    private var deleteBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            Button("Delete Moment") {
+                showDeleteConfirmation = true
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .foregroundStyle(.red)
+            .background(.bar)
         }
     }
 
@@ -76,74 +92,18 @@ struct EditMomentView: View {
     }
 
     private var imagesStrip: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(vm.existingImages) { image in
-                    existingImageThumbnail(image)
-                }
-                ForEach(vm.newImageUploads) { upload in
-                    newUploadThumbnail(upload)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
+        ReorderableImageStrip(items: vm.orderedImages, onMove: vm.moveImages(fromOffsets:toOffset:)) { item in
+            imageThumbnail(for: item)
         }
     }
 
     @ViewBuilder
-    private func existingImageThumbnail(_ image: MomentImage) -> some View {
-        let markedForRemoval = vm.imagesToRemove.contains(image.id)
+    private func imageThumbnail(for item: EditMomentViewModel.OrderedImageItem) -> some View {
         ZStack(alignment: .topTrailing) {
-            AsyncImage(url: URL(string: image.url)) { phase in
-                switch phase {
-                case .success(let img):
-                    img.resizable().scaledToFill()
-                case .failure:
-                    Rectangle()
-                        .fill(Color.secondary.opacity(0.2))
-                        .overlay(Image(systemName: "photo").foregroundStyle(.secondary).accessibilityHidden(true))
-                default:
-                    Rectangle()
-                        .fill(Color.secondary.opacity(0.1))
-                        .overlay(ProgressView())
-                }
-            }
-            .frame(width: 80, height: 80)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .opacity(markedForRemoval ? 0.4 : 1.0)
-            .overlay {
-                if markedForRemoval {
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(.red, lineWidth: 2)
-                }
-            }
+            thumbnailContent(for: item)
 
             Button {
-                vm.toggleImageRemoval(id: image.id)
-            } label: {
-                Image(systemName: markedForRemoval ? "arrow.uturn.backward.circle.fill" : "xmark.circle.fill")
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, .black.opacity(0.6))
-                    .font(.system(size: 18))
-            }
-            .accessibilityLabel(markedForRemoval ? "Restore photo" : "Remove photo")
-            .offset(x: 6, y: -6)
-        }
-    }
-
-    @ViewBuilder
-    private func newUploadThumbnail(_ upload: AttachedImageUpload) -> some View {
-        ZStack(alignment: .topTrailing) {
-            Image(uiImage: upload.image)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            uploadStateOverlay(for: upload.state)
-
-            Button {
-                vm.removeNewUpload(id: upload.id)
+                vm.removeImageItem(id: item.id)
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .symbolRenderingMode(.palette)
@@ -178,6 +138,38 @@ struct EditMomentView: View {
         }
     }
 
+    @ViewBuilder
+    private func thumbnailContent(for item: EditMomentViewModel.OrderedImageItem) -> some View {
+        switch item.source {
+        case .existing(let image):
+            AsyncImage(url: URL(string: image.url)) { phase in
+                switch phase {
+                case .success(let img):
+                    img.resizable().scaledToFill()
+                case .failure:
+                    Rectangle()
+                        .fill(Color.secondary.opacity(0.2))
+                        .overlay(Image(systemName: "photo").foregroundStyle(.secondary).accessibilityHidden(true))
+                default:
+                    Rectangle()
+                        .fill(Color.secondary.opacity(0.1))
+                        .overlay(ProgressView())
+                }
+            }
+            .frame(width: 80, height: 80)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        case .newUpload(let upload):
+            Image(uiImage: upload.image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    uploadStateOverlay(for: upload.state)
+                }
+        }
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
@@ -203,13 +195,6 @@ struct EditMomentView: View {
                 .disabled(!vm.canSave)
                 .fontWeight(.semibold)
             }
-        }
-
-        ToolbarItem(placement: .bottomBar) {
-            Button("Delete Moment") {
-                showDeleteConfirmation = true
-            }
-            .foregroundStyle(.red)
         }
     }
 

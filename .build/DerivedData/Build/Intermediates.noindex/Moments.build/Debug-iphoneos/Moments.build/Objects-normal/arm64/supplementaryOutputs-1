@@ -1,0 +1,23 @@
+{
+  "/Users/phil/Code/Moments/Moments/Features/Compose/AttachedImagesStrip.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/AttachedImagesStrip.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/AttachedImagesStrip.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/AttachedImagesStrip.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/AttachedImagesStrip.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/AttachedImagesStrip.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Compose/ComposeView.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeView.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeView.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeView.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeView.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeView.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Compose/ComposeViewModel.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeViewModel.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeViewModel.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeViewModel.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeViewModel.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/ComposeViewModel.swiftdeps"
+  }
+}

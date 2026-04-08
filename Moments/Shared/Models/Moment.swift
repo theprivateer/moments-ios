@@ -18,11 +18,27 @@ struct Moment: Codable, Identifiable, Sendable {
         case createdAt
         case images
     }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(Int.self, forKey: .id)
+        body = try container.decodeIfPresent(String.self, forKey: .body)
+        bodyHTML = try container.decodeIfPresent(String.self, forKey: .bodyHTML)
+        createdAt = try container.decode(String.self, forKey: .createdAt)
+        images = try container.decode([MomentImage].self, forKey: .images)
+            .sorted { lhs, rhs in
+                if lhs.position == rhs.position {
+                    return lhs.id < rhs.id
+                }
+                return lhs.position < rhs.position
+            }
+    }
 }
 
 struct MomentImage: Codable, Identifiable, Sendable {
     let id: Int
     let url: String
+    let position: Int
 }
 
 struct MomentImageResponse: Decodable, Sendable {

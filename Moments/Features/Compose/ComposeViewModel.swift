@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import UIKit
 import Observation
 
@@ -112,5 +113,9 @@ extension Notification.Name {
         uploadTasks[id]?.cancel()
         uploadTasks[id] = nil
         imageUploads.removeAll { $0.id == id }
+    }
+
+    func moveImages(fromOffsets: IndexSet, toOffset: Int) {
+        imageUploads.move(fromOffsets: fromOffsets, toOffset: toOffset)
     }
 }

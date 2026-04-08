@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import UIKit
 import Observation
 
@@ -8,16 +9,41 @@ extension Notification.Name {
 }
 
 @Observable @MainActor final class EditMomentViewModel {
+    struct OrderedImageItem: Identifiable {
+        enum Source {
+            case existing(MomentImage)
+            case newUpload(AttachedImageUpload)
+        }
+
+        let id = UUID()
+        let source: Source
+
+        var existingImageID: Int? {
+            guard case .existing(let image) = source else { return nil }
+            return image.id
+        }
+
+        var uploadedImageID: Int? {
+            guard case .newUpload(let upload) = source,
+                  case .uploaded(let imageID) = upload.state else { return nil }
+            return imageID
+        }
+
+        var uploadID: UUID? {
+            guard case .newUpload(let upload) = source else { return nil }
+            return upload.id
+        }
+    }
+
     var bodyText: String
-    var existingImages: [MomentImage]
-    var imagesToRemove: Set<Int> = []
-    var newImageUploads: [AttachedImageUpload] = []
+    var orderedImages: [OrderedImageItem]
     var isSubmitting: Bool = false
     var submissionError: AppError?
     var wasSaved: Bool = false
     var wasDeleted: Bool = false
 
     private let moment: Moment
+    private let originalExistingImageIDs: [Int]
     let store: SettingsStore
     private let api = MomentsAPIService()
     private var uploadTasks: [UUID: Task<Void, Never>] = [:]
@@ -33,17 +59,23 @@ extension Notification.Name {
     }
 
     var allUploadsSettled: Bool {
-        newImageUploads.allSatisfy { if case .uploading = $0.state { return false }; return true }
+        orderedImages.allSatisfy { item in
+            guard case .newUpload(let upload) = item.source else { return true }
+            if case .uploading = upload.state { return false }
+            return true
+        }
     }
 
     var hasFailedUploads: Bool {
-        newImageUploads.contains { if case .failed = $0.state { return true }; return false }
+        orderedImages.contains { item in
+            guard case .newUpload(let upload) = item.source else { return false }
+            if case .failed = upload.state { return true }
+            return false
+        }
     }
 
     var hasContent: Bool {
-        !bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || existingImages.contains { !imagesToRemove.contains($0.id) }
-            || !newImageUploads.isEmpty
+        !bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !orderedImages.isEmpty
     }
 
     var canSave: Bool {
@@ -54,8 +86,9 @@ extension Notification.Name {
     init(moment: Moment, store: SettingsStore) {
         self.moment = moment
         self.store = store
+        self.originalExistingImageIDs = moment.images.map(\.id)
         self.bodyText = moment.body ?? ""
-        self.existingImages = moment.images
+        self.orderedImages = moment.images.map { OrderedImageItem(source: .existing($0)) }
     }
 
     func save() async {
@@ -65,11 +98,12 @@ extension Notification.Name {
 
         let trimmed = bodyText.trimmingCharacters(in: .whitespacesAndNewlines)
         let bodyToSend: String? = trimmed.isEmpty ? nil : trimmed
-        let addImageIDs = newImageUploads.compactMap { upload -> Int? in
-            if case .uploaded(let id) = upload.state { return id }
-            return nil
+        let addImageIDs = orderedImages.compactMap(\.uploadedImageID)
+        let visibleExistingImageIDs = Set(orderedImages.compactMap(\.existingImageID))
+        let removeImageIDs = originalExistingImageIDs.filter { !visibleExistingImageIDs.contains($0) }
+        let imageOrderIDs = orderedImages.compactMap { item in
+            item.existingImageID ?? item.uploadedImageID
         }
-        let removeImageIDs = Array(imagesToRemove)
 
         do {
             let updated = try await api.patchMoment(
@@ -77,6 +111,7 @@ extension Notification.Name {
                 body: bodyToSend,
                 addImageIDs: addImageIDs,
                 removeImageIDs: removeImageIDs,
+                imageOrderIDs: imageOrderIDs,
                 serverURL: store.serverURL,
                 token: store.personalAccessToken
             )
@@ -114,7 +149,7 @@ extension Notification.Name {
 
     func appendImage(_ image: UIImage) {
         let upload = AttachedImageUpload(image: image)
-        newImageUploads.append(upload)
+        orderedImages.append(OrderedImageItem(source: .newUpload(upload)))
         let task = Task { await performUpload(upload) }
         uploadTasks[upload.id] = task
     }
@@ -128,17 +163,16 @@ extension Notification.Name {
         }
     }
 
-    func toggleImageRemoval(id: Int) {
-        if imagesToRemove.contains(id) {
-            imagesToRemove.remove(id)
-        } else {
-            imagesToRemove.insert(id)
+    func removeImageItem(id: UUID) {
+        guard let item = orderedImages.first(where: { $0.id == id }) else { return }
+        if let uploadID = item.uploadID {
+            uploadTasks[uploadID]?.cancel()
+            uploadTasks[uploadID] = nil
         }
+        orderedImages.removeAll { $0.id == id }
     }
 
-    func removeNewUpload(id: UUID) {
-        uploadTasks[id]?.cancel()
-        uploadTasks[id] = nil
-        newImageUploads.removeAll { $0.id == id }
+    func moveImages(fromOffsets: IndexSet, toOffset: Int) {
+        orderedImages.move(fromOffsets: fromOffsets, toOffset: toOffset)
     }
 }

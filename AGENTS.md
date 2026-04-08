@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Server API
 
-The Moments server API is documented as an OpenAPI 3.1 spec at `.claude/specs/openapi.yaml`. Consult this spec when working on network requests, API integration, or adding new endpoints.
+The Moments server API is documented as an OpenAPI 3.1 spec at `specs/openapi.yaml`. Consult this spec when working on network requests, API integration, or adding new endpoints.
 
 ## Build & Run
 

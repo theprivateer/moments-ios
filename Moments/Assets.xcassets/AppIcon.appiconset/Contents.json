@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "moments-icon.png",
+      "filename" : "moments-appicon.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

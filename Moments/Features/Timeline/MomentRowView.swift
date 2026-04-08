@@ -4,6 +4,7 @@ struct MomentRowView: View {
     let moment: Moment
     let onEdit: () -> Void
     let onDelete: () -> Void
+    let onImageTap: ([MomentImage], Int) -> Void
     @State private var paragraphs: [AttributedString] = []
 
     var body: some View {
@@ -29,7 +30,7 @@ struct MomentRowView: View {
                     ? [GridItem(.flexible())]
                     : [GridItem(.flexible()), GridItem(.flexible())]
                 LazyVGrid(columns: columns, spacing: 8) {
-                    ForEach(moment.images) { image in
+                    ForEach(Array(moment.images.enumerated()), id: \.element.id) { index, image in
                         AsyncImage(url: URL(string: image.url)) { phase in
                             switch phase {
                             case .success(let img):
@@ -50,6 +51,10 @@ struct MomentRowView: View {
                         .frame(maxWidth: .infinity)
                         .aspectRatio(4/3, contentMode: .fit)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .contentShape(RoundedRectangle(cornerRadius: 8))
+                        .onTapGesture {
+                            onImageTap(moment.images, index)
+                        }
                     }
                 }
             }
@@ -98,7 +103,7 @@ struct MomentRowView: View {
         return Self.relativeFormatter.localizedString(for: date, relativeTo: Date())
     }
 
-    private static func splitParagraphs(_ html: String) -> [String] {
+    nonisolated private static func splitParagraphs(_ html: String) -> [String] {
         // Two-level split:
         //   1. Walk <pre> boundaries (keeps nested <p> inside <pre> intact).
         //   2. For every prose chunk, further split on <p> boundaries.
@@ -115,7 +120,7 @@ struct MomentRowView: View {
         return result.isEmpty ? [html] : result
     }
 
-    private static func splitByParagraphs(_ html: String) -> [String] {
+    nonisolated private static func splitByParagraphs(_ html: String) -> [String] {
         let trimmed = html.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
         let matches = trimmed.matches(of: /<p[^>]*>[\s\S]*?<\/p>/)
@@ -123,7 +128,7 @@ struct MomentRowView: View {
         return fragments.isEmpty ? [trimmed] : fragments
     }
 
-    private static func parseFragment(_ html: String) -> AttributedString? {
+    nonisolated private static func parseFragment(_ html: String) -> AttributedString? {
         let styledHTML = """
         <style>
         body { font-family: -apple-system, sans-serif; font-size: 17px; }

@@ -1,0 +1,23 @@
+{
+  "/Users/phil/Code/Moments/Moments/Features/Edit/EditMomentView.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentView.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentView.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentView.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentView.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentView.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Edit/EditMomentViewModel.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentViewModel.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentViewModel.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentViewModel.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentViewModel.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/EditMomentViewModel.swiftdeps"
+  },
+  "/Users/phil/Code/Moments/Moments/Features/Settings/SettingsView.swift" : {
+    "const-values" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsView.swiftconstvalues",
+    "dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsView.d",
+    "diagnostics" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsView.dia",
+    "object" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsView.o",
+    "swift-dependencies" : "/Users/phil/Code/Moments/.build/DerivedData/Build/Intermediates.noindex/Moments.build/Debug-iphoneos/Moments.build/Objects-normal/arm64/SettingsView.swiftdeps"
+  }
+}

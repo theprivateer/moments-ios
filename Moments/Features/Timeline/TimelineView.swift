@@ -1,11 +1,18 @@
 import SwiftUI
 
 struct TimelineView: View {
+    struct TimelineImageViewerState: Identifiable {
+        let id = UUID()
+        let images: [MomentImage]
+        let initialIndex: Int
+    }
+
     @State private var vm: TimelineViewModel
     @State private var showingCompose = false
     @State private var showingSettings = false
     @State private var momentToEdit: Moment? = nil
     @State private var momentToDelete: Moment? = nil
+    @State private var imageViewerState: TimelineImageViewerState? = nil
 
     init(store: SettingsStore) {
         _vm = State(initialValue: TimelineViewModel(store: store))
@@ -45,6 +52,11 @@ struct TimelineView: View {
         }
         .sheet(item: $momentToEdit) { moment in
             EditMomentView(moment: moment, store: vm.store)
+        }
+        .fullScreenCover(item: $imageViewerState) { state in
+            TimelineImageViewer(images: state.images, initialIndex: state.initialIndex) {
+                imageViewerState = nil
+            }
         }
         .confirmationDialog("Delete this moment?", isPresented: Binding(
             get: { momentToDelete != nil },
@@ -95,7 +107,13 @@ struct TimelineView: View {
                     MomentRowView(
                         moment: moment,
                         onEdit: { momentToEdit = moment },
-                        onDelete: { momentToDelete = moment }
+                        onDelete: { momentToDelete = moment },
+                        onImageTap: { images, selectedIndex in
+                            imageViewerState = TimelineImageViewerState(
+                                images: images,
+                                initialIndex: selectedIndex
+                            )
+                        }
                     )
                     .onAppear {
                         Task { await vm.loadNextPageIfNeeded(currentItem: moment) }

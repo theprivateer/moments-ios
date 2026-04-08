@@ -2,36 +2,31 @@ import SwiftUI
 
 struct AttachedImagesStrip: View {
     let uploads: [AttachedImageUpload]
+    let onMove: (IndexSet, Int) -> Void
     let onRemove: (UUID) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(uploads) { upload in
-                    ZStack(alignment: .topTrailing) {
-                        Image(uiImage: upload.image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 80, height: 80)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+        ReorderableImageStrip(items: uploads, onMove: onMove) { upload in
+            ZStack(alignment: .topTrailing) {
+                Image(uiImage: upload.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                        stateOverlay(for: upload.state)
+                stateOverlay(for: upload.state)
 
-                        Button {
-                            onRemove(upload.id)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .symbolRenderingMode(.palette)
-                                .foregroundStyle(.white, .black.opacity(0.6))
-                                .font(.system(size: 18))
-                        }
-                        .accessibilityLabel("Remove photo")
-                        .offset(x: 6, y: -6)
-                    }
+                Button {
+                    onRemove(upload.id)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, .black.opacity(0.6))
+                        .font(.system(size: 18))
                 }
+                .accessibilityLabel("Remove photo")
+                .offset(x: 6, y: -6)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
         }
     }
 

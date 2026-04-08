@@ -106,13 +106,22 @@ struct MomentsAPIService {
         }
     }
 
-    func patchMoment(id: Int, body: String?, addImageIDs: [Int], removeImageIDs: [Int], serverURL: String, token: String) async throws -> Moment {
+    func patchMoment(
+        id: Int,
+        body: String?,
+        addImageIDs: [Int],
+        removeImageIDs: [Int],
+        imageOrderIDs: [Int],
+        serverURL: String,
+        token: String
+    ) async throws -> Moment {
         var request = try MomentsEndpoint.patchMoment(id: id).urlRequest(baseURL: serverURL, token: token)
 
         var payload: [String: Any] = [:]
         if let body { payload["body"] = body }
         if !addImageIDs.isEmpty { payload["add_images"] = addImageIDs }
         if !removeImageIDs.isEmpty { payload["remove_images"] = removeImageIDs }
+        payload["image_order"] = imageOrderIDs
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 

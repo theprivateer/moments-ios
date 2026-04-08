@@ -19,9 +19,11 @@ struct ComposeView: View {
 
                     if !vm.imageUploads.isEmpty {
                         Divider()
-                        AttachedImagesStrip(uploads: vm.imageUploads) { id in
-                            vm.removeImage(withID: id)
-                        }
+                        AttachedImagesStrip(
+                            uploads: vm.imageUploads,
+                            onMove: vm.moveImages(fromOffsets:toOffset:),
+                            onRemove: vm.removeImage(withID:)
+                        )
                     }
                 }
 
